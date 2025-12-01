@@ -1,4 +1,6 @@
 import numpy as np
+import heapq
+from collections import deque
 from .graph import Cell
 from .utils import trace_path
 
@@ -24,45 +26,87 @@ visualize.
 
 
 def depth_first_search(graph, start, goal):
-    """Depth First Search (DFS) algorithm. This algorithm is optional for P3.
-    Args:
-        graph: The graph class.
-        start: Start cell as a Cell object.
-        goal: Goal cell as a Cell object.
-    """
-    graph.init_graph()  # Make sure all the node values are reset.
-
-    """TODO (P3): Implement DFS (optional)."""
-
-    # If no path was found, return an empty list.
+    """Depth First Search (DFS) algorithm."""
+    graph.init_graph()
+    stack = [start]
+    visited = {(start.i, start.j)}
+    graph.parent[(start.i, start.j)] = None
+    
+    while stack:
+        current = stack.pop()
+        graph.visited_cells.append(Cell(current.i, current.j))
+        
+        if current.i == goal.i and current.j == goal.j:
+            return trace_path(goal, graph)
+        
+        for neighbor in graph.find_neighbors(current.i, current.j):
+            key = (neighbor.i, neighbor.j)
+            if key not in visited:
+                visited.add(key)
+                graph.parent[key] = Cell(current.i, current.j)
+                stack.append(neighbor)
+    
     return []
 
 
 def breadth_first_search(graph, start, goal):
-    """Breadth First Search (BFS) algorithm.
-    Args:
-        graph: The graph class.
-        start: Start cell as a Cell object.
-        goal: Goal cell as a Cell object.
-    """
-    graph.init_graph()  # Make sure all the node values are reset.
-
-    """TODO (P3): Implement BFS."""
-
-    # If no path was found, return an empty list.
+    """Breadth First Search (BFS) algorithm."""
+    graph.init_graph()
+    queue = deque([start])
+    visited = {(start.i, start.j)}
+    graph.parent[(start.i, start.j)] = None
+    
+    while queue:
+        current = queue.popleft()
+        graph.visited_cells.append(Cell(current.i, current.j))
+        
+        if current.i == goal.i and current.j == goal.j:
+            return trace_path(goal, graph)
+        
+        for neighbor in graph.find_neighbors(current.i, current.j):
+            key = (neighbor.i, neighbor.j)
+            if key not in visited:
+                visited.add(key)
+                graph.parent[key] = Cell(current.i, current.j)
+                queue.append(neighbor)
+    
     return []
 
 
 def a_star_search(graph, start, goal):
-    """A* Search (BFS) algorithm.
-    Args:
-        graph: The graph class.
-        start: Start cell as a Cell object.
-        goal: Goal cell as a Cell object.
-    """
-    graph.init_graph()  # Make sure all the node values are reset.
-
-    """TODO (P3): Implement A*."""
-
-    # If no path was found, return an empty list.
+    """A* Search algorithm."""
+    graph.init_graph()
+    
+    def h(cell):
+        return np.sqrt((cell.i - goal.i)**2 + (cell.j - goal.j)**2)
+    
+    counter = 0
+    open_set = [(h(start), 0, counter, start)]
+    visited = set()
+    graph.distance[(start.i, start.j)] = 0
+    graph.parent[(start.i, start.j)] = None
+    
+    while open_set:
+        f, g, _, current = heapq.heappop(open_set)
+        key = (current.i, current.j)
+        
+        if key in visited:
+            continue
+            
+        visited.add(key)
+        graph.visited_cells.append(Cell(current.i, current.j))
+        
+        if current.i == goal.i and current.j == goal.j:
+            return trace_path(goal, graph)
+        
+        for neighbor in graph.find_neighbors(current.i, current.j):
+            nkey = (neighbor.i, neighbor.j)
+            new_g = g + 1
+            
+            if nkey not in visited and (nkey not in graph.distance or new_g < graph.distance[nkey]):
+                graph.distance[nkey] = new_g
+                graph.parent[nkey] = Cell(current.i, current.j)
+                counter += 1
+                heapq.heappush(open_set, (new_g + h(neighbor), new_g, counter, neighbor))
+    
     return []

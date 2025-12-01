@@ -2,7 +2,7 @@ import argparse
 from mbot_bridge.api import MBot
 
 from src.graph import GridGraph, Cell
-from src.graph_search import a_star_search, breadth_first_search, depth_first_search
+from src.graph_search import a_star_search
 from src.utils import generate_plan_file
 
 
@@ -14,7 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="HelloRob Path Planning on the Robot.")
     parser.add_argument("-m", "--map", type=str, default="/home/mbot/current.map", help="Path to the map file.")
     parser.add_argument("--goal", type=float, nargs=2, default=[0, 0], help="Goal position.")
-    parser.add_argument("-r", "--collision-radius", type=float, default=15, help="Collision radius (meters).")
+    parser.add_argument("-r", "--collision-radius", type=float, default=0.15, help="Collision radius (meters).")
 
     args = parser.parse_args()
 
@@ -35,12 +35,12 @@ if __name__ == "__main__":
     start_pose = robot.read_slam_pose()
     start = graph.pos_to_cell(*start_pose[:2])
 
-    path = []
-    # TODO: Call graph search function and put the result in path.
+    # Use A* search for optimal path planning
+    path = a_star_search(graph, start, goal)
 
     # Send the path to the robot.
     print(f"Found path of length {len(path)}. Driving to the goal!")
     robot.drive_path(cells_to_poses(path, graph))
 
     # Genererate the path file for visualization.
-    generate_plan_file(graph, start, goal, path)
+    generate_plan_file(graph, start, goal, path, algo="astar")

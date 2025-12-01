@@ -45,7 +45,9 @@ class GridGraph:
         self.set_collision_radius(collision_radius)
         self.visited_cells = []  # Stores which cells have been visited in order for visualization.
 
-        # TODO: Define any additional member variables to store node data.
+        # Data structures to store node information for graph search
+        self.parent = {}  # Maps (i, j) -> parent Cell
+        self.distance = {}  # Maps (i, j) -> distance/cost
 
     def as_string(self):
         """Returns the map data as a string for visualization."""
@@ -151,11 +153,8 @@ class GridGraph:
         return np.any(self.is_cell_occupied(i_inds[in_bounds], j_inds[in_bounds]))
 
     def get_parent(self, cell):
-        """Returns a Cell object representing the parent of the given cell, or
-        None if the node has no parent. This function is used to trace back the
-        path after graph search."""
-        # TODO (P3): Return the parent of the node at the cell.
-        return None
+        """Returns the parent Cell or None."""
+        return self.parent.get((cell.i, cell.j))
 
     def init_graph(self):
         """Initializes the node data in the graph in preparation for graph search.
@@ -164,17 +163,15 @@ class GridGraph:
         which store the properties of the graph, like width, height, and cell
         odds values. You should use this information to initialize your added
         values, like the distances and the nodes."""
-        self.visited_cells = []  # Reset visited cells for visualization.
-
-        # TODO (P3): Initialize your graph nodes.
+        self.visited_cells = []
+        self.parent = {}
+        self.distance = {}
 
     def find_neighbors(self, i, j):
-        """Returns a list of the neighbors of the given cell. This should not
-        include any cells outside of the bounds of the graph."""
+        """Returns valid neighboring cells."""
         nbrs = []
-        # TODO (P3): Return a list of the indices of all the neighbors of the node
-        # at cell (i, j). You should not include any cells that are outside of the
-        # bounds of the graph.
-
-        # HINT: The function is_cell_in_bounds() might come in handy.
+        for di, dj in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            ni, nj = i + di, j + dj
+            if self.is_cell_in_bounds(ni, nj) and not self.check_collision(ni, nj):
+                nbrs.append(Cell(ni, nj))
         return nbrs

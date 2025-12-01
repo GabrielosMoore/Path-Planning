@@ -37,4 +37,4 @@ if __name__ == "__main__":
         exit()
 
     # Output the planning file for visualization.
-    generate_plan_file(graph, start, goal, path)
+    generate_plan_file(graph, start, goal, path, algo=args.algo)
